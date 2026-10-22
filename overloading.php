@@ -1,28 +1,32 @@
 <?php
 declare(strict_types=1);
-class MahasiswaDinamis {
-    private array $atributTambahan = [];
-    public function __construct(public string $nim, public string $nama) {}
-    public function __set(string $key, mixed $value): void {
-        $diizinkan = ['hobi', 'asalSekolah', 'agama'];
-        if (!in_array($key, $diizinkan, true)) {
-            throw new InvalidArgumentException('Atribut tidak diizinkan');
+
+class LaporanMahasiswa {
+    public function __construct(private string $nama) {}
+
+    public function __call(string $method, array $args): mixed {
+        if ($method === 'cetakRingkas' && count($args) === 0) {
+            return 'Mahasiswa: ' . $this->nama;
         }
-        $this->atributTambahan[$key] = $value;
-    }
-    public function __get(string $key): mixed {
-        if (!array_key_exists($key, $this->atributTambahan)) {
-            throw new OutOfBoundsException('Atribut tidak ditemukan');
-        }
-        return $this->atributTambahan[$key];
-    }
-    public function __isset(string $key): bool {
-        return isset($this->atributTambahan[$key]);
-    }
-    public function __unset(string $key): void {
-        unset($this->atributTambahan[$key]);
+        throw new BadMethodCallException('Method tidak tersedia: ' . $method);
     }
 }
-$mhs = new MahasiswaDinamis('231001', 'Alya');
-$mhs->hobi = 'Membaca';
-echo htmlspecialchars($mhs->hobi, ENT_QUOTES, 'UTF-8');
+
+$laporan = new LaporanMahasiswa('Alya');
+
+echo "<b>1. Method yang diizinkan</b><br>";
+echo htmlspecialchars($laporan->cetakRingkas()) . "<br><br>";
+
+echo "<b>2. Method tidak dikenal</b><br>";
+try {
+    echo $laporan->cetakLengkap();
+} catch (BadMethodCallException $e) {
+    echo "Exception: " . htmlspecialchars($e->getMessage()) . "<br><br>";
+}
+
+echo "<b>3. Method diizinkan tapi pakai argumen</b><br>";
+try {
+    echo $laporan->cetakRingkas('tambahan');
+} catch (BadMethodCallException $e) {
+    echo "Exception: " . htmlspecialchars($e->getMessage()) . "<br>";
+}
